@@ -30,14 +30,14 @@ async function showCategory(category) {
     currentCategory = category;
     container.innerHTML = "";
 
-    // Mise à jour visuelle des boutons de navigation
+    // Mise à jour visuelle des boutons de navigation (Style iOS Active)
     document.querySelectorAll("#navigation button").forEach(btn => {
         btn.classList.toggle("active", btn.getAttribute('data-cat') === category);
     });
 
     backButton.classList.remove("hidden");
 
-    // Utilisation du cache pour éviter des appels API inutiles
+    // Utilisation du cache pour la performance
     if (cache[category]) {
         displayCategory(cache[category]);
         return;
@@ -50,7 +50,7 @@ async function showCategory(category) {
         .eq("available", true);
 
     if (error) {
-        console.error("Erreur lors de la récupération :", error);
+        console.error("Erreur API :", error);
         return;
     }
 
@@ -104,7 +104,7 @@ function displayCategory(grouped) {
 }
 
 /**
- * Affiche les détails d'un plat dans la modal iOS-style
+ * Affiche les détails d'un plat dans la modal "Bottom Sheet"
  */
 function showDetail(dish) {
     const displayPrice = (dish.price === 0 || dish.price === "0")
@@ -130,7 +130,7 @@ function showDetail(dish) {
                 <div style="font-size:1.5rem; font-weight:700; color: var(--accent-color)">${displayPrice}</div>
                 ${extraContent}
             </div>
-            <div style="height:100px;"></div> <!-- Spacer pour le bouton retour -->
+            <div style="height:100px;"></div> 
         </div>
     `;
     
@@ -138,7 +138,6 @@ function showDetail(dish) {
     detail.classList.remove("hidden");
     document.body.classList.add("overlay-open");
     
-    // Fermeture en cliquant sur l'arrière-plan (le flou)
     detail.onclick = (e) => {
         if (e.target === detail) closeDetail();
     };
@@ -149,12 +148,12 @@ function showDetail(dish) {
  */
 function closeDetail() {
     detail.classList.remove("active");
-    setTimeout(() => detail.classList.add("hidden"), 400); // Attend la fin de l'animation CSS
+    setTimeout(() => detail.classList.add("hidden"), 400); 
     document.body.classList.remove("overlay-open");
 }
 
 /**
- * Réinitialise la vue principale
+ * Réinitialise la navigation
  */
 function closeMenuAnimation() {
     currentCategory = null;
@@ -165,7 +164,7 @@ function closeMenuAnimation() {
 }
 
 /**
- * Logique du bouton retour unique
+ * Gestion du bouton retour
  */
 backButton.onclick = () => {
     if (detail.classList.contains("active")) {
@@ -176,7 +175,7 @@ backButton.onclick = () => {
 };
 
 /**
- * Effet visuel de pression (Feedback Haptique iOS)
+ * Feedback Haptique Visuel (Effet de pression iOS)
  */
 function addHapticFeedback() {
     const handlePress = (e) => {
@@ -201,14 +200,14 @@ function addHapticFeedback() {
 }
 
 /**
- * Initialisation
+ * Lancement au chargement du DOM
  */
 document.addEventListener("DOMContentLoaded", () => {
     const nav = document.getElementById("navigation");
     const labels = {
         entree: "Entrées",
         plat: "Plats",
-        accompagnement: "Garnitures",
+        accompagnement: "Accompagnements", // Changé ici
         dessert: "Desserts",
         boisson: "Boissons"
     };
