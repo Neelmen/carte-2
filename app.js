@@ -1,57 +1,60 @@
+// Configuration Supabase
 const SUPABASE_URL = "https://oaxpofkmtrudriyrbxvy.supabase.co";
 const BUCKET_NAME = "dishes-images";
 const client = supabase.createClient(SUPABASE_URL, "sb_publishable_W0bTuLBKIo_-tSVK_XfKYg_LScZ_5EY");
 
 const cache = {};
 let currentCategory = null;
+const detail = document.getElementById("dish-detail");
+const backButton = document.getElementById("back-button");
 
+/**
+ * Formate l'URL de l'image stockée sur Supabase
+ */
 function getImageUrlFromPath(imagePath) {
     if (!imagePath) return "";
     return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${imagePath}`;
 }
 
-// --- INITIALISATION DU MENU ---
-function initMainMenu() {
-    const nav = document.getElementById("navigation");
-    const categories = ["entree", "plat", "dessert", "boisson", "accompagnement"];
-    const labels = { entree: "ENTRÉES", plat: "PLATS", dessert: "DESSERTS", boisson: "BOISSONS", accompagnement: "ACCOMPAGNEMENTS" };
-
-    nav.innerHTML = "";
-    categories.forEach(cat => {
-        const btn = document.createElement("button");
-        btn.textContent = labels[cat] || cat.toUpperCase();
-        btn.addEventListener("click", () => showCategory(cat));
-        nav.appendChild(btn);
-    });
-}
-
-// --- AFFICHAGE CATÉGORIE ---
+/**
+ * Gère l'affichage d'une catégorie et le filtrage des données
+ */
 async function showCategory(category) {
     const container = document.getElementById("menu");
+    
     if (currentCategory === category) {
-        currentCategory = null;
-        container.innerHTML = "";
-        document.getElementById("back-button").classList.add("hidden");
+        closeMenuAnimation();
         return;
     }
-
+    
     currentCategory = category;
-    container.innerHTML = "<p>Chargement...</p>";
-    document.getElementById("back-button").classList.remove("hidden");
+    container.innerHTML = "";
 
-    // Mise à jour visuelle des boutons
+    // Mise à jour visuelle des boutons de navigation
     document.querySelectorAll("#navigation button").forEach(btn => {
-        btn.classList.toggle("active", btn.textContent.toLowerCase().includes(category.substring(0,3)));
+        btn.classList.toggle("active", btn.getAttribute('data-cat') === category);
     });
 
+    backButton.classList.remove("hidden");
+
+    // Utilisation du cache pour éviter des appels API inutiles
     if (cache[category]) {
         displayCategory(cache[category]);
         return;
     }
 
-    const { data, error } = await client.from("dishes").select("*").eq("category", category).eq("available", true);
-    if (error) { container.innerHTML = "Erreur de chargement."; return; }
+    const { data, error } = await client
+        .from("dishes")
+        .select("*")
+        .eq("category", category)
+        .eq("available", true);
 
+    if (error) {
+        console.error("Erreur lors de la récupération :", error);
+        return;
+    }
+
+    // Groupement par sous-catégorie
     const grouped = data.reduce((acc, dish) => {
         const sub = dish.subcategory || "_no_sub";
         if (!acc[sub]) acc[sub] = [];
@@ -63,17 +66,17 @@ async function showCategory(category) {
     displayCategory(grouped);
 }
 
-// --- RENDU DES CARTES ---
+/**
+ * Génère le DOM pour la catégorie sélectionnée
+ */
 function displayCategory(grouped) {
     const container = document.getElementById("menu");
     container.innerHTML = "";
 
-    for (const [sub, dishes] of Object.entries(grouped)) {
-        if (sub !== "_no_sub") {
-            const h2 = document.createElement("h2");
-            h2.textContent = sub;
-            container.appendChild(h2);
-        }
+    Object.entries(grouped).forEach(([sub, dishes]) => {
+        const title = document.createElement("h2");
+        title.textContent = sub === "_no_sub" ? "La Sélection" : sub;
+        container.appendChild(title);
 
         const groupDiv = document.createElement("div");
         groupDiv.className = "category-group";
@@ -81,64 +84,142 @@ function displayCategory(grouped) {
         dishes.forEach(dish => {
             const card = document.createElement("div");
             card.className = "card";
+
+            const displayPrice = (dish.price === 0 || dish.price === "0")
+                ? "Inclus"
+                : `${dish.price} €`;
+
             card.innerHTML = `
-                <img src="${getImageUrlFromPath(dish.image_path)}" alt="${dish.name}">
-                <div class="card-content">
-                    <h3>${dish.name}</h3>
-                    <p>${dish.price} €</p>
-                </div>
+                <img src="${getImageUrlFromPath(dish.image_path)}" alt="${dish.name}" loading="lazy">
+                <h3>${dish.name}</h3>
+                <p>${displayPrice}</p>
             `;
-            card.addEventListener("click", () => showDetail(dish));
+            card.onclick = () => showDetail(dish);
             groupDiv.appendChild(card);
         });
         container.appendChild(groupDiv);
-    }
-    container.scrollIntoView({ behavior: "smooth" });
+    });
+
+    window.scrollTo({ top: container.offsetTop - 20, behavior: 'smooth' });
 }
 
-// --- ZOOM DU PLAT (FONCTION CORRIGÉE) ---
+/**
+ * Affiche les détails d'un plat dans la modal iOS-style
+ */
 function showDetail(dish) {
-    const detail = document.getElementById("dish-detail");
-    detail.classList.remove("hidden");
-    document.body.style.overflow = "hidden"; // Empêche le scroll derrière
+    const displayPrice = (dish.price === 0 || dish.price === "0")
+        ? "Inclus"
+        : `${dish.price} €`;
+
+    let extraContent = "";
+    if (dish.description) {
+        extraContent += `<p style="margin-top:20px; font-size:1.1rem; line-height:1.6; color: rgba(255,255,255,0.8);">${dish.description}</p>`;
+    }
+    if (dish.ingredients) {
+        extraContent += `<p style="font-size:0.9rem; color: var(--accent-color); margin-top:15px; font-weight:300;">
+                            <b>Ingrédients :</b> ${dish.ingredients}
+                         </p>`;
+    }
 
     detail.innerHTML = `
         <div class="zoom-container">
-            <div class="card zoom-card">
-                <img src="${getImageUrlFromPath(dish.image_path)}" alt="${dish.name}">
-                <h3>${dish.name}</h3>
-                <p class="price">${dish.price} €</p>
-                ${dish.description ? `<p class="desc"><b>Description :</b> ${dish.description}</p>` : ''}
-                ${dish.ingredients ? `<p class="ing"><b>Ingrédients :</b> ${dish.ingredients}</p>` : ''}
-                <button class="close-zoom">Fermer</button>
+            <div style="width:40px; height:5px; background:rgba(255,255,255,0.2); border-radius:10px; margin: 0 auto 20px;"></div>
+            <img src="${getImageUrlFromPath(dish.image_path)}" class="zoom-image">
+            <div class="zoom-info">
+                <h2 style="border:none; padding:0; margin: 20px 0 5px;">${dish.name}</h2>
+                <div style="font-size:1.5rem; font-weight:700; color: var(--accent-color)">${displayPrice}</div>
+                ${extraContent}
             </div>
+            <div style="height:100px;"></div> <!-- Spacer pour le bouton retour -->
         </div>
     `;
-
-    // Fermer au clic sur le bouton ou sur le fond
+    
+    detail.classList.add("active");
+    detail.classList.remove("hidden");
+    document.body.classList.add("overlay-open");
+    
+    // Fermeture en cliquant sur l'arrière-plan (le flou)
     detail.onclick = (e) => {
-        if (e.target.id === "dish-detail" || e.target.className === "zoom-container" || e.target.className === "close-zoom") {
-            closeDetail();
-        }
+        if (e.target === detail) closeDetail();
     };
 }
 
+/**
+ * Ferme la vue détaillée
+ */
 function closeDetail() {
-    const detail = document.getElementById("dish-detail");
-    detail.classList.add("hidden");
-    document.body.style.overflow = "auto";
+    detail.classList.remove("active");
+    setTimeout(() => detail.classList.add("hidden"), 400); // Attend la fin de l'animation CSS
+    document.body.classList.remove("overlay-open");
 }
 
-// --- BOUTON RETOUR ---
-document.getElementById("back-button").addEventListener("click", () => {
-    if (!document.getElementById("dish-detail").classList.contains("hidden")) {
+/**
+ * Réinitialise la vue principale
+ */
+function closeMenuAnimation() {
+    currentCategory = null;
+    document.getElementById("menu").innerHTML = "";
+    backButton.classList.add("hidden");
+    document.querySelectorAll("#navigation button").forEach(btn => btn.classList.remove("active"));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * Logique du bouton retour unique
+ */
+backButton.onclick = () => {
+    if (detail.classList.contains("active")) {
         closeDetail();
     } else {
-        currentCategory = null;
-        document.getElementById("menu").innerHTML = "";
-        document.getElementById("back-button").classList.add("hidden");
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        closeMenuAnimation();
     }
-});
+};
 
-document.addEventListener("DOMContentLoaded", initMainMenu);
+/**
+ * Effet visuel de pression (Feedback Haptique iOS)
+ */
+function addHapticFeedback() {
+    const handlePress = (e) => {
+        const btn = e.target.closest("button, .card, #back-button");
+        if (btn) {
+            btn.style.transform = "scale(0.96)";
+            btn.style.transition = "transform 0.1s cubic-bezier(0.4, 0, 0.2, 1)";
+        }
+    };
+
+    const handleRelease = (e) => {
+        const btn = e.target.closest("button, .card, #back-button");
+        if (btn) {
+            btn.style.transform = "";
+        }
+    };
+
+    document.addEventListener("mousedown", handlePress);
+    document.addEventListener("mouseup", handleRelease);
+    document.addEventListener("touchstart", handlePress, {passive: true});
+    document.addEventListener("touchend", handleRelease, {passive: true});
+}
+
+/**
+ * Initialisation
+ */
+document.addEventListener("DOMContentLoaded", () => {
+    const nav = document.getElementById("navigation");
+    const labels = {
+        entree: "Entrées",
+        plat: "Plats",
+        accompagnement: "Garnitures",
+        dessert: "Desserts",
+        boisson: "Boissons"
+    };
+
+    Object.keys(labels).forEach(cat => {
+        const btn = document.createElement("button");
+        btn.textContent = labels[cat];
+        btn.setAttribute('data-cat', cat);
+        btn.onclick = () => showCategory(cat);
+        nav.appendChild(btn);
+    });
+
+    addHapticFeedback();
+});
