@@ -1,157 +1,234 @@
 /* ============================================================
-   Thème : Neutre & Convivial
-   Polices : Playfair Display (Titres) & Lato (Texte)
+   Thème : Ambre Épicé & Animation Fluide
+   Polices : Playfair Display & Lato
 ============================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+
+:root {
+    --primary: #d35400; /* Orange terre cuite */
+    --secondary: #2c3e50; /* Bleu nuit profond */
+    --accent: #f39c12; /* Or ambré */
+    --bg-warm: #fff9f1;
+}
 
 body {
     font-family: 'Lato', sans-serif;
-    font-weight: 400;
     margin: 0;
     padding: 20px;
-    background: #f9f7f2; /* Fond crème neutre */
-    text-align: center;
-    color: #4a4a4a; /* Gris anthracite doux */
+    color: #333;
     line-height: 1.6;
+    min-height: 100vh;
+    /* --- ANIMATION DE FOND --- */
+    background: linear-gradient(135deg, #fff9f1 0%, #ffe4d1 50%, #fff9f1 100%);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
 }
 
-/* --- Logo et Titres --- */
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* --- LOGO ANIMÉ --- */
 .logo-text {
     font-family: 'Playfair Display', serif;
-    text-transform: capitalize;
-    letter-spacing: 1px;
-    font-size: 2.5rem;
+    font-size: clamp(2.5rem, 8vw, 3.5rem);
     font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 10px;
+    color: var(--secondary);
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 0px rgba(211, 84, 0, 0.1);
 }
 
 h1 {
-    margin-bottom: 40px;
     font-family: 'Playfair Display', serif;
-    font-weight: 400;
     font-style: italic;
-    font-size: 1.8rem;
-    color: #7f8c8d;
-    letter-spacing: 2px;
+    font-weight: 400;
+    color: var(--primary);
+    margin-bottom: 40px;
+    letter-spacing: 3px;
+    position: relative;
+    display: inline-block;
 }
 
-/* --- Navigation --- */
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 20%;
+    width: 60%;
+    height: 1px;
+    background: var(--primary);
+}
+
+/* --- BOUTONS NAVIGATION STYLE --- */
 #navigation {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 40px;
+    gap: 15px;
+    margin-bottom: 50px;
 }
 
 #navigation button {
-    width: 240px;
-    background: #ffffff;
-    border: 1px solid #dcdde1;
-    padding: 14px;
-    border-radius: 8px; /* Moins arrondi pour la neutralité */
+    width: 260px;
+    background: white;
+    border: 2px solid var(--primary);
+    padding: 15px;
+    border-radius: 50px; /* Boutons pillule */
     font-family: 'Lato', sans-serif;
     font-weight: 700;
-    font-size: 0.9rem;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
+    color: var(--primary);
     cursor: pointer;
-    color: #2c3e50 !important;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 0px var(--primary);
+    position: relative;
+    overflow: hidden;
 }
 
-#navigation button:hover, #navigation button.active {
-    background: #2c3e50;
-    color: #ffffff !important;
-    border-color: #2c3e50;
+#navigation button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 0px var(--primary);
+    background: var(--bg-warm);
 }
 
-/* --- Grille des Plats (1 Seul par ligne) --- */
+#navigation button.active {
+    background: var(--primary);
+    color: white !important;
+    transform: translateY(2px);
+    box-shadow: 0 0px 0px var(--primary);
+}
+
+/* --- CARTES DE PLATS --- */
 .category-group {
     display: flex;
-    flex-direction: column; /* Force 1 plat par ligne */
+    flex-direction: column;
     align-items: center;
-    gap: 30px;
-    max-width: 600px; /* Largeur optimale pour la lecture */
-    margin: 0 auto 50px;
+    gap: 40px;
+    max-width: 650px;
+    margin: 0 auto 60px;
 }
 
 .card {
     background: white;
-    border-radius: 12px;
+    border-radius: 25px; /* Plus arrondi pour la convivialité */
     overflow: hidden;
-    width: 100%; /* Prend toute la largeur du conteneur */
+    width: 100%;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Ombre légère et conviviale */
-    transition: transform 0.3s ease;
-    border: 1px solid #f0f0f0;
+    box-shadow: 0 10px 30px rgba(211, 84, 0, 0.1);
+    transition: all 0.4s ease;
+    border: 1px solid rgba(211, 84, 0, 0.1);
 }
 
 .card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transform: scale(1.02);
+    box-shadow: 0 15px 45px rgba(211, 84, 0, 0.2);
 }
 
 .card img {
     width: 100%;
-    height: 250px; /* Plus grand pour l'affichage plein écran */
+    height: 300px;
     object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.card:hover img {
+    transform: scale(1.05);
+}
+
+.card-content {
+    padding: 25px;
+    background: white;
 }
 
 .card h3 {
     font-family: 'Playfair Display', serif;
-    margin: 15px 15px 5px;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #2c3e50;
+    font-size: 1.6rem;
+    margin: 0 0 10px;
+    color: var(--secondary);
 }
 
 .card p {
-    margin: 0 15px 20px;
-    font-size: 1.1rem;
-    color: #e67e22; /* Couleur miel pour le prix (convivial) */
-    font-family: 'Lato', sans-serif;
+    font-size: 1.3rem;
+    color: var(--primary);
     font-weight: 700;
+    margin: 0;
 }
 
-/* --- Fiche Détail (Zoom) --- */
+/* --- ZOOM PLAT (MODALE) --- */
 #dish-detail {
-    background: rgba(255, 254, 250, 0.98);
+    position: fixed;
+    inset: 0;
+    background: rgba(44, 62, 80, 0.95); /* Fond bleu nuit transparent */
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-#dish-detail .card {
-    max-width: 550px;
-    padding: 25px;
-    box-shadow: none;
-    border: none;
+.zoom-card {
+    background: var(--bg-warm);
+    width: 90%;
+    max-width: 500px;
+    border-radius: 30px;
+    padding: 30px;
+    text-align: left;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-#dish-detail .card h3 {
-    font-size: 2rem;
+@keyframes zoomIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.zoom-card img {
+    width: 100%;
+    border-radius: 20px;
     margin-bottom: 20px;
 }
 
-/* --- Bouton Retour --- */
+.close-zoom {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 15px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* --- BOUTON RETOUR --- */
 #back-button {
     position: fixed;
-    bottom: 30px;
+    bottom: 25px;
     left: 50%;
     transform: translateX(-50%);
-    background: #2c3e50;
+    background: var(--secondary);
     color: white !important;
-    padding: 14px 35px;
+    padding: 15px 40px;
     border-radius: 50px;
-    font-family: 'Lato', sans-serif;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 100;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    cursor: pointer;
 }
+
+.hidden { display: none !important; }
 
 #menu h2 {
     font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
-    font-style: italic;
-    color: #2c3e50;
-    margin: 40px 0 20px;
+    color: var(--secondary);
+    font-size: 2rem;
+    margin: 50px 0 20px;
 }
