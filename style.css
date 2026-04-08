@@ -1,66 +1,129 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
-
+/* --- VARIABLES & RESET --- */
 :root {
-    --bg-color: #0f1016;
-    --glass-bg: rgba(255, 255, 255, 0.06);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --accent-color: #007AFF;
-    --accent-gradient: linear-gradient(135deg, #007AFF, #00C6FF);
+    /* Nouvelle Palette Chaude (Sunset / Amber) */
+    --bg-color-start: #ff8c42; /* Orange chaud */
+    --bg-color-end: #6b2d18;   /* Marron terre cuite profond */
+    
+    --glass-bg: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    
+    --accent-color: #ffca28; /* Ambre vif pour les prix */
+    --accent-gradient: linear-gradient(135deg, #ff9800, #ff5722); /* Dégradé chaud pour boutons actifs */
+    
     --text-main: #ffffff;
-    --text-dim: rgba(255, 255, 255, 0.5);
+    --text-dim: rgba(255, 255, 255, 0.7);
+    --text-on-accent: #ffffff;
 }
 
 * {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent; /* Désactive le flash gris sur mobile */
+    margin: 0;
+    padding: 0;
 }
 
 body {
     font-family: 'Outfit', sans-serif;
-    margin: 0;
     min-height: 100vh;
-    background-color: var(--bg-color);
     color: var(--text-main);
     display: flex;
     justify-content: center;
     overflow-x: hidden;
-    /* Fond animé subtil */
-    background: radial-gradient(circle at 0% 0%, #1a1c2c 0%, #0f1016 100%);
+    position: relative;
+    
+    /* Fond dégradé chaud de base */
+    background: linear-gradient(160deg, var(--bg-color-start) 0%, var(--bg-color-end) 100%);
+    background-attachment: fixed;
 }
 
-body::before {
-    content: "";
+/* --- FOND ANIMÉ AVEC MOTIFS (BOKEH) --- */
+.animated-bg-pattern {
     position: fixed;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: radial-gradient(circle at 30% 30%, rgba(0, 122, 255, 0.1), transparent 40%),
-                radial-gradient(circle at 70% 70%, rgba(130, 0, 255, 0.08), transparent 40%);
-    animation: rotateBg 25s linear infinite;
-    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none; /* Ne bloque pas les clics */
 }
 
-@keyframes rotateBg {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+/* Création des motifs (cercles de lumière) */
+.animated-bg-pattern::before,
+.animated-bg-pattern::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 252, 220, 0.15); /* Lumière jaune très pâle */
+    filter: blur(60px); /* Effet flou Bokeh */
+    animation: moveBokeh linear infinite;
 }
 
+/* Premier motif */
+.animated-bg-pattern::before {
+    width: 400px;
+    height: 400px;
+    top: 10%;
+    left: -10%;
+    animation-duration: 35s;
+    animation-delay: -5s;
+}
+
+/* Deuxième motif */
+.animated-bg-pattern::after {
+    width: 600px;
+    height: 600px;
+    bottom: -10%;
+    right: -20%;
+    background: rgba(255, 160, 0, 0.1); /* Ambre plus prononcé */
+    animation-duration: 45s;
+}
+
+/* Animation de déplacement et d'apparition/disparition en boucle */
+@keyframes moveBokeh {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    40% {
+        transform: translate(100px, 150px) scale(1.1);
+    }
+    60% {
+        transform: translate(50px, 300px) scale(0.9);
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-100px, 500px) scale(1);
+        opacity: 0;
+    }
+}
+
+/* --- STRUCTURE PAGE --- */
 .overlay-open { overflow: hidden; }
 
 .page {
-    width: min(600px, 100%); /* Largeur optimisée pour une liste lisible */
-    padding: 40px 15px;
-    z-index: 1;
+    width: min(600px, 100%); /* Force le mode liste lisible */
+    padding: 30px 15px;
+    z-index: 1; /* Passe au-dessus du fond animé */
+    position: relative;
 }
 
+/* --- TYPOGRAPHIE --- */
 .logo-text {
     font-weight: 800;
-    font-size: clamp(2rem, 8vw, 2.8rem);
+    font-size: clamp(2.2rem, 9vw, 3rem);
     letter-spacing: -1px;
-    background: linear-gradient(to bottom, #fff 0%, #aaa 100%);
+    background: linear-gradient(to bottom, #ffffff 0%, #ffe0b2 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     text-align: center;
+    margin-bottom: 5px;
 }
 
 h1 {
@@ -73,11 +136,11 @@ h1 {
     text-align: center;
 }
 
-/* Navigation en liste de boutons */
+/* --- NAVIGATION (LISTE iOS) --- */
 #navigation {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 40px;
 }
 
@@ -87,114 +150,154 @@ h1 {
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
     padding: 18px;
-    border-radius: 18px;
+    border-radius: 20px;
     color: var(--text-main);
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 1.05rem;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left; /* Aligné à gauche comme les menus iOS */
+    
+    /* Transition pour l'effet haptique JS et le hover */
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* État actif (catégorie sélectionnée) */
 #navigation button.active {
     background: var(--accent-gradient);
     border-color: transparent;
-    box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+    color: var(--text-on-accent);
+    box-shadow: 0 8px 25px rgba(230, 81, 0, 0.4);
 }
 
-/* Organisation en LISTE */
+/* --- LISTE DES PLATS --- */
 .category-group {
     display: flex;
-    flex-direction: column; /* Force le mode liste */
+    flex-direction: column;
     gap: 20px;
-    padding-bottom: 120px;
+    padding-bottom: 120px; /* Espace pour le bouton retour */
 }
 
 h2 {
     text-align: left;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     margin: 40px 0 15px;
     font-weight: 700;
     color: var(--text-main);
+    padding-left: 5px;
 }
 
 .card {
-    display: flex; /* Aligne image et texte horizontalement si besoin, ou reste vertical */
+    display: flex;
     flex-direction: column;
     background: var(--glass-bg);
     backdrop-filter: blur(15px);
-    border-radius: 24px;
+    border-radius: 28px;
     overflow: hidden;
     border: 1px solid var(--glass-border);
     cursor: pointer;
-    transition: transform 0.2s ease;
+    
+    /* Transition pour l'effet haptique JS */
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
 }
 
 .card img {
     width: 100%;
-    aspect-ratio: 16/9;
+    aspect-ratio: 16/9; /* Format image cinéma */
     object-fit: cover;
+    display: block;
 }
 
 .card h3 {
-    padding: 15px 20px 5px;
+    padding: 18px 20px 6px;
     margin: 0;
-    font-size: 1.2rem;
-}
-
-.card p {
-    padding: 0 20px 20px;
-    margin: 0;
-    color: var(--accent-color);
+    font-size: 1.25rem;
     font-weight: 600;
 }
 
-/* Detail Sheet */
+.card p {
+    padding: 0 20px 22px;
+    margin: 0;
+    color: var(--accent-color); /* Prix en ambre vif */
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* --- DETAIL SHEET (iOS STYLE) --- */
 #dish-detail {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    background: rgba(0,0,0,0.5); /* Sombre pour détacher la sheet */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     z-index: 2000;
     display: none;
-    align-items: flex-end;
+    align-items: flex-end; /* La sheet monte du bas */
 }
 
 #dish-detail.active { display: flex; }
 
 .zoom-container {
     width: 100%;
-    background: #1c1c1e;
-    border-radius: 30px 30px 0 0;
+    background: #2c140c; /* Fond très sombre mais chaud pour le détail */
+    border-radius: 35px 35px 0 0;
     padding: 20px;
-    max-height: 92vh;
+    max-height: 94vh;
     overflow-y: auto;
-    animation: slideUp 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    
+    /* Animation d'apparition iOS */
+    animation: sheetSlideUp 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
-@keyframes slideUp {
+@keyframes sheetSlideUp {
     from { transform: translateY(100%); }
     to { transform: translateY(0); }
 }
 
 .zoom-image {
     width: 100%;
-    border-radius: 20px;
+    border-radius: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
+.zoom-info {
+    padding: 10px 5px;
+}
+
+/* --- BOUTON RETOUR FLOATANT --- */
 #back-button {
     position: fixed;
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--text-main);
-    color: #000;
-    padding: 16px 40px;
+    
+    /* Couleur Rouge Vif pour le contraste */
+    background: linear-gradient(135deg, #ff1744, #d50000);
+    color: white;
+    
+    padding: 18px 45px;
     border-radius: 100px;
-    font-weight: 700;
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     z-index: 3000;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     cursor: pointer;
+    border: none;
+    
+    /* Transition pour l'effet haptique JS */
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
 }
 
+/* --- UTILITAIRES --- */
 .hidden { display: none !important; }
+
+/* Optimisation pour les grands écrans (tablettes/PC) */
+@media (min-width: 600px) {
+    .page {
+        padding: 50px 20px;
+    }
+    .card img {
+        aspect-ratio: 21/9; /* Plus panoramique sur grand écran */
+    }
+}
